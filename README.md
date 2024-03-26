@@ -1,6 +1,6 @@
-# Getting Started with Create React App
+# flight-filter-app
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Link to deployed app: https://flight-filter-app.netlify.app
 
 ## Available Scripts
 
