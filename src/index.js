@@ -15,10 +15,8 @@ const root = ReactDOM.createRoot(document.getElementById('root'))
 root.render(
   <Provider store={store}>
     <ThemeProvider theme={theme}>
-      <React.StrictMode>
-        <CssBaseline />
-        <App />
-      </React.StrictMode>
+      <CssBaseline />
+      <App />
     </ThemeProvider>
   </Provider>
 )

@@ -6,14 +6,15 @@ import FilterFlightsBlock from './scenes/global/FilterFlightsBlock'
 import data from './assets/data/flights.json'
 import { setFlightItems } from "./state";
 import { useEffect, useState } from "react";
+import EmptyView from "./scenes/home/EmptyView";
 
 function App() {
   const dispatch = useDispatch();
-  let { flightItems, filter, filteredItems } = useSelector((state) => state.filter);
+  let { filteredItems } = useSelector((state) => state.filter);
   const [visible, setVisible] = useState(2)
 
   const setFlightItemsData = () => {
-    dispatch(setFlightItems(data?.result?.flights))
+    dispatch(setFlightItems(data.result.flights))
   }
 
   const loadMoreFlightItems = () => {
@@ -22,21 +23,19 @@ function App() {
 
   useEffect(() => {
     setFlightItemsData()
-  })
+  }, [])
 
   return (
     <Box display="flex" width="1200px" margin="0 auto" sx={{ backgroundColor: "white" }}>
-      <FilterFlightsBlock items={flightItems} filter={filter} />
+      <FilterFlightsBlock filteredItems={filteredItems} />
       <Box>
-        {filteredItems.length > 0 ?
+        {
           filteredItems.slice(0, visible).map((el, id) => (
-            <FlightsElement flight={el?.flight} key={id} />
-          )) :
-          flightItems.slice(0, visible).map((el, id) => (
-            <FlightsElement flight={el?.flight} key={id} />
+            <FlightsElement flight={el.flight} key={id} />
           ))
+
         }
-        <Box textAlign="center" marginTop="10px">
+        {filteredItems.length > 0 ? <Box textAlign="center" marginTop="10px">
           <Button
             onClick={loadMoreFlightItems}
             variant="outlined"
@@ -50,7 +49,7 @@ function App() {
             }}>
             Показать еще
           </Button>
-        </Box>
+        </Box> : <EmptyView />}
       </Box>
     </Box>
   );

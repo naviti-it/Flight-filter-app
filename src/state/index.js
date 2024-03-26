@@ -3,219 +3,173 @@ import { createSlice } from '@reduxjs/toolkit'
 const initialState = {
   flightItems: [],
   filteredItems: [],
-  filter: {
-    rangePrice: [0, 100000]
-  }
 }
 
 export const filterSlice = createSlice({
   name: 'filter',
   initialState,
   reducers: {
+
     setFlightItems: (state, action) => {
       state.flightItems = action.payload
     },
 
-    getRangePrice: (state, action) => {
-      state.filter.rangePrice = action.payload
-    },
 
     sortFlightItems: (state, action) => {
+      let sortFlightItems;
+      let sortFilteredItems;
+
       if (action.payload === 'по убыванию цены') {
-        state.filteredItems =
-          state.filteredItems.length > 0
-            ? [
-              ...state.filteredItems.slice().sort((a, b) => {
-                return (
-                  b.flight.price.passengerPrices[0].singlePassengerTotal
-                    .amount -
-                  a.flight.price.passengerPrices[0].singlePassengerTotal
-                    .amount
-                )
-              })
-            ]
-            : [
-              ...state.flightItems.slice().sort((a, b) => {
-                return (
-                  b.flight.price.passengerPrices[0].singlePassengerTotal
-                    .amount -
-                  a.flight.price.passengerPrices[0].singlePassengerTotal
-                    .amount
-                )
-              })
-            ]
+
+        sortFilteredItems = [...state.filteredItems.sort((a, b) => {
+          return (
+            b.flight.price.passengerPrices[0].singlePassengerTotal
+              .amount -
+            a.flight.price.passengerPrices[0].singlePassengerTotal
+              .amount
+          )
+        })]
       }
 
+      sortFlightItems = [...state.flightItems.sort((a, b) => {
+        return (
+          b.flight.price.passengerPrices[0].singlePassengerTotal
+            .amount -
+          a.flight.price.passengerPrices[0].singlePassengerTotal
+            .amount
+        )
+      })
+      ]
+
       if (action.payload === 'по возростанию цены') {
-        state.filteredItems =
-          state.filteredItems.length > 0
-            ? [
-              ...state.filteredItems.sort((a, b) => {
-                return (
-                  a.flight.price.passengerPrices[0].singlePassengerTotal
-                    .amount -
-                  b.flight.price.passengerPrices[0].singlePassengerTotal
-                    .amount
-                )
-              })
-            ]
-            : [
-              ...state.flightItems.sort((a, b) => {
-                return (
-                  a.flight.price.passengerPrices[0].singlePassengerTotal
-                    .amount -
-                  b.flight.price.passengerPrices[0].singlePassengerTotal
-                    .amount
-                )
-              })
-            ]
+
+        sortFlightItems = [...state.flightItems.sort((a, b) => {
+          return (
+            a.flight.price.passengerPrices[0].singlePassengerTotal
+              .amount -
+            b.flight.price.passengerPrices[0].singlePassengerTotal
+              .amount
+          )
+        })
+        ];
+        sortFilteredItems = [...state.filteredItems.sort((a, b) => {
+          return (
+            a.flight.price.passengerPrices[0].singlePassengerTotal
+              .amount -
+            b.flight.price.passengerPrices[0].singlePassengerTotal
+              .amount
+          )
+        })];
       }
 
       if (action.payload === 'по времени в пути') {
-        state.filteredItems =
-          state.filteredItems.length > 0
-            ? [
-              ...state.filteredItems.sort((a, b) => {
-                const durationA = a.flight.legs.reduce(
-                  (prev, el) => prev + el.duration,
-                  0
-                )
-                const durationB = b.flight.legs.reduce(
-                  (prev, el) => prev + el.duration,
-                  0
-                )
-                return durationA - durationB
-              })
-            ]
-            : [
-              ...state.flightItems.slice().sort((a, b) => {
-                const durationA = a.flight.legs.reduce(
-                  (prev, el) => prev + el.duration,
-                  0
-                )
-                const durationB = b.flight.legs.reduce(
-                  (prev, el) => prev + el.duration,
-                  0
-                )
-                return durationA - durationB
-              })
-            ]
+        sortFlightItems = [...state.flightItems.sort((a, b) => {
+          const durationA = a.flight.legs.reduce(
+            (prev, el) => prev + el.duration,
+            0
+          )
+          const durationB = b.flight.legs.reduce(
+            (prev, el) => prev + el.duration,
+            0
+          )
+          return durationA - durationB
+        })
+        ]
+        sortFilteredItems = [...state.filteredItems.sort((a, b) => {
+          const durationA = a.flight.legs.reduce(
+            (prev, el) => prev + el.duration,
+            0
+          )
+          const durationB = b.flight.legs.reduce(
+            (prev, el) => prev + el.duration,
+            0
+          )
+          return durationA - durationB
+        })]
       }
+      state.filteredItems = state.filteredItems.length ? sortFilteredItems : sortFlightItems
     },
+
 
     filterByQuantitySegments: (state, action) => {
-      if (action.payload.checked && action.payload.name === '1 пересадка') {
-        state.filteredItems =
-          state.filteredItems.length > 0
-            ? [
-              ...state.filteredItems.filter(
-                (el) =>
-                  el.flight.legs[0].segments.length > 1 ||
-                  el.flight.legs[1].segments.length > 1
-              )
-            ]
-            : [
-              ...state.flightItems.filter(
-                (el) =>
-                  el.flight.legs[0].segments.length > 1 ||
-                  el.flight.legs[1].segments.length > 1
-              )
-            ]
-      }
-      if (action.payload.checked && action.payload.name === 'без пересадок') {
-        state.filteredItems =
-          state.filteredItems.length > 0
-            ? [
-              ...state.filteredItems.filter(
-                (el) =>
-                  el.flight.legs[0].segments.length === 1 &&
-                  el.flight.legs[1].segments.length === 1
-              )
-            ]
-            : [
-              ...state.flightItems.filter(
-                (el) =>
-                  el.flight.legs[0].segments.length === 1 &&
-                  el.flight.legs[1].segments.length === 1
-              )
-            ]
-      }
-      if (!action.payload.checked) {
-        state.filteredItems = [
-          ...state.filteredItems.filter((el) => {
-            if (action.payload.name === '1 пересадка') {
-              return (
-                el.flight.legs[0].segments.length === 1 &&
-                el.flight.legs[1].segments.length === 1
-              )
-            }
-            if (action.payload.name === 'без пересадок') {
-              return (
+      const checkedItems = action.payload.filter((item) => item.checked).map((item) => item.value)
+      let filterByQuantitySegments;
+      let flightByQuantitySegments;
+      const withSegments = checkedItems.includes("1 пересадка")
+      const withoutSegments = checkedItems.includes("без пересадок")
+
+      if (checkedItems.length) {
+        if (withSegments) {
+          filterByQuantitySegments =
+            [...state.filteredItems.filter(
+              (el) =>
                 el.flight.legs[0].segments.length > 1 ||
                 el.flight.legs[1].segments.length > 1
-              )
-            }
-          })
-        ]
+            )]
+        } else if (withoutSegments) {
+          filterByQuantitySegments =
+            [...state.filteredItems.filter(
+              (el) =>
+                el.flight.legs[0].segments.length === 1 &&
+                el.flight.legs[1].segments.length === 1
+            )]
+        }
       }
+      if (!checkedItems.length) {
+        filterByQuantitySegments = [...state.flightItems]
+      }
+
+      if (checkedItems.length) {
+        if (withSegments) {
+          flightByQuantitySegments =
+            [...state.flightItems.filter(
+              (el) =>
+                el.flight.legs[0].segments.length > 1 ||
+                el.flight.legs[1].segments.length > 1
+            )]
+        } else if (withoutSegments) {
+          flightByQuantitySegments =
+            [...state.flightItems.filter(
+              (el) =>
+                el.flight.legs[0].segments.length === 1 &&
+                el.flight.legs[1].segments.length === 1
+            )]
+        }
+      }
+      state.filteredItems = state.filteredItems.length ? filterByQuantitySegments : flightByQuantitySegments;
     },
+
 
     filterByRangePrice: (state, action) => {
-      state.filter.rangePrice = action.payload
-      state.filteredItems =
-        state.filteredItems.length > 0
-          ? [
-            ...state.filteredItems.filter((el) => {
-              return (
-                el.flight.price.passengerPrices[0].singlePassengerTotal
-                  .amount >= state.filter.rangePrice[0] &&
-                el.flight.price.passengerPrices[0].singlePassengerTotal
-                  .amount <= state.filter.rangePrice[1]
-              )
-            })
-          ]
-          : [
-            ...state.flightItems.filter((el) => {
-              return (
-                el.flight.price.passengerPrices[0].singlePassengerTotal
-                  .amount >= state.filter.rangePrice[0] &&
-                el.flight.price.passengerPrices[0].singlePassengerTotal
-                  .amount <= state.filter.rangePrice[1]
-              )
-            })
-          ]
+      let flightByRangePrice = [...state.flightItems.filter((el) => {
+        return (
+          el.flight.price.passengerPrices[0].singlePassengerTotal
+            .amount >= action.payload[0] &&
+          el.flight.price.passengerPrices[0].singlePassengerTotal
+            .amount <= action.payload[1]
+        )
+      })]
+      state.filteredItems = flightByRangePrice;
     },
 
+
     filterByNameAirline: (state, action) => {
-      if (action.payload.checked) {
-        state.filteredItems =
-          state.filteredItems.length > 0
-            ? [
-              ...state.filteredItems,
-              ...state.flightItems.filter((el) => {
-                return el.flight.carrier.caption === action.payload.name
-              })
-            ]
-            : [
-              ...state.flightItems.filter((el) => {
-                return el.flight.carrier.caption === action.payload.name
-              })
-            ]
+      const checkedItemsAirline = action.payload.filter((item) => item.checked).map((item) => item.value)
+      let filterByNameAirline;
+
+      if (checkedItemsAirline.length) {
+        filterByNameAirline = [...state.filteredItems.filter((el) => {
+          return checkedItemsAirline.includes(el.flight.carrier.caption)
+        })]
       }
-      if (!action.payload.checked) {
-        state.filteredItems = [
-          ...state.filteredItems.filter((el) => {
-            return el.flight.carrier.caption !== action.payload.name
-          })
-        ]
-      }
+      state.filteredItems = state.filteredItems.length ? filterByNameAirline : [...state.flightItems]
     }
   }
+
 })
 
 export const {
   setFlightItems,
-  getRangePrice,
   sortFlightItems,
   filterByQuantitySegments,
   filterByNameAirline,

@@ -1,19 +1,70 @@
 import { Box, Checkbox, FormControl, FormControlLabel, FormGroup, FormLabel, Radio, RadioGroup, Slider } from '@mui/material';
 import { useDispatch } from 'react-redux';
 import { filterByNameAirline, filterByQuantitySegments, filterByRangePrice, sortFlightItems } from '../../state';
+import { useEffect, useState } from 'react';
+import { airlinesNameArrayObj, quantityCheck, sortLabels } from '../../assets/data/constants';
 
 
-const FilterFlightsBlock = ({ items, filter }) => {
-
-    const { rangePrice } = filter
-
-    const airlines = [...new Set(items.map(el => el?.flight?.carrier?.caption))]
+const FilterFlightsBlock = ({ filteredItems }) => {
     const dispatch = useDispatch();
-    const sortLabels = ['по возростанию цены', 'по убыванию цены', 'по времени в пути']
+    const [sortFlights, setSortFlights] = useState(null);
+    const [rangePrice, setRangePrice] = useState([0, 150000]);
+    const [quantityChecbox, setQuantityChecbox] = useState(quantityCheck);
+    const [nameAirline, setNameAirline] = useState(airlinesNameArrayObj);
 
-    const HandleChangeFilterRangePrice = (event, newValue) => {
-        dispatch(filterByRangePrice(newValue))
+    const handleChangeSortValue = (e) =>
+        setSortFlights(e.target.value);
+
+    const handleChangeQuantity = (id) => {
+        const checkboxListQuantity = quantityChecbox;
+        const changeCheckboxQuantity = checkboxListQuantity.map((el) => {
+            return el.id === id ? { ...el, checked: !el.checked } : el
+        })
+        setQuantityChecbox(changeCheckboxQuantity)
     }
+
+    const HandleChangeRangePrice = (event, newValue) => {
+        setRangePrice(newValue)
+    }
+
+    const handleChangeAirline = (id) => {
+        const checkboxListAirline = nameAirline;
+        const changeCheckboxAirlines = checkboxListAirline.map((el) => {
+            return el.id === id ? { ...el, checked: !el.checked } : el
+        })
+        setNameAirline(changeCheckboxAirlines)
+    }
+
+    const filterOnSort = () => {
+        if (sortFlights) {
+            dispatch(sortFlightItems(sortFlights))
+        }
+    }
+    const filterOnQuantitySegments = () => {
+        dispatch(filterByQuantitySegments(quantityChecbox))
+    }
+    const filterOnRangePrice = () => {
+        dispatch(filterByRangePrice(rangePrice))
+    }
+    const filterOnNameAirline = () => {
+        dispatch(filterByNameAirline(nameAirline))
+    }
+
+    useEffect(() => {
+        filterOnSort()
+    }, [sortFlights])
+
+    useEffect(() => {
+        filterOnQuantitySegments()
+    }, [quantityChecbox])
+
+    useEffect(() => {
+        filterOnRangePrice()
+    }, [rangePrice])
+
+    useEffect(() => {
+        filterOnNameAirline()
+    }, [nameAirline])
 
     return (
         <>
@@ -21,7 +72,6 @@ const FilterFlightsBlock = ({ items, filter }) => {
                 height="100vh"
                 width="320px"
             >
-
                 <FormControl>
                     <FormLabel id="sort-radio-buttons-group" sx={{ fontWeight: "700", marginTop: "20px" }}>Сортировать</FormLabel>
                     <RadioGroup
@@ -31,7 +81,7 @@ const FilterFlightsBlock = ({ items, filter }) => {
                                 <FormControlLabel
                                     key={id}
                                     value={el}
-                                    control={<Radio onChange={(e) => dispatch(sortFlightItems(e.target.value))} />}
+                                    control={<Radio onChange={handleChangeSortValue} />}
                                     label={`- ${el}`} />
                             )
                         })}
@@ -41,32 +91,33 @@ const FilterFlightsBlock = ({ items, filter }) => {
                 <FormControl>
                     <FormLabel component="legend" sx={{ fontWeight: "700", marginTop: "20px" }}>Фильтровать</FormLabel>
                     <FormGroup  >
-                        <FormControlLabel
-                            control={
-                                <Checkbox onClick={(e) => dispatch(filterByQuantitySegments({ checked: e.target.checked, name: e.target.name }))} name="1 пересадка" />
-                            }
-                            label="- 1 пересадка"
-                        />
-                        <FormControlLabel
-                            control={
-                                <Checkbox onClick={(e) => dispatch(filterByQuantitySegments({ checked: e.target.checked, name: e.target.name }))} name="без пересадок" />
-                            }
-                            label="- без пересадок"
-                        />
+                        {quantityChecbox.map((el, id) => {
+                            return (<FormControlLabel
+                                key={id}
+                                value={el.value}
+                                checked={el.checked}
+                                control={
+                                    <Checkbox
+                                        onChange={() => handleChangeQuantity(el.id)}
+                                        name={el.value}
+                                    />
+                                }
+                                label={`- ${el.value}`}
+                            />)
+                        })}
                     </FormGroup>
                 </FormControl>
 
                 <FormControl>
-                    <FormLabel component="legend" sx={{ fontWeight: "700", marginTop: "20px", paddingRight: '200px' }}>Цена</FormLabel >
-                    <Box sx={{ width: '100%' }} margin="20px 0">
+                    <FormLabel component="legend" sx={{ fontWeight: "700", margin: "20px 0 40px", paddingRight: '200px' }}>Цена</FormLabel >
+                    <Box sx={{ width: '100%' }} margin-="10px 0">
                         <Slider
                             value={rangePrice}
-                            onChange={HandleChangeFilterRangePrice}
-                            valueLabelDisplay="auto"
+                            onChange={HandleChangeRangePrice}
+                            valueLabelDisplay="on"
                             min={0}
                             max={150000}
                             step={1000}
-
                         />
                     </Box>
                 </FormControl>
@@ -74,21 +125,22 @@ const FilterFlightsBlock = ({ items, filter }) => {
                 <FormControl>
                     <FormLabel component="legend" sx={{ fontWeight: "700", marginTop: "20px" }}>Авиакомпании</FormLabel>
                     <FormGroup>
-                        {airlines.map((el, id) => {
-                            return (
-                                <FormControlLabel
-                                    key={id}
-                                    control={
-                                        <Checkbox onClick={(e) => dispatch(filterByNameAirline({ checked: e.target.checked, name: el }))} name={el} />
-                                    }
-
-                                    label={el}
-                                />)
+                        {nameAirline.map((el, id) => {
+                            return (<FormControlLabel
+                                key={id}
+                                value={el.value}
+                                checked={el.checked}
+                                disabled={filteredItems.findIndex((elem) => elem.flight.carrier.caption === el.value) === -1}
+                                control={
+                                    <Checkbox
+                                        onChange={() => handleChangeAirline(el.id)}
+                                    />
+                                }
+                                label={el.value}
+                            />)
                         })}
-
                     </FormGroup>
                 </FormControl>
-
             </Box>
         </>
     )
